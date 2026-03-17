@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Browser</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div class="toolbar">
+    <div class="dropdown-container">
+      <div id="dropdownToggle" class="title dropdown-toggle" title="Xem danh sách ghim">
+        Mini Browser <span class="caret">▼</span>
+      </div>
+      <div id="pinnedDropdown" class="dropdown-menu">
+        <!-- Pinned items here via JS -->
+      </div>
+    </div>
+    <div class="toolbar-actions">
+      <button id="backBtn" class="icon-btn" title="Trang chủ (Duyệt web)" style="display: none;">🏠 Home</button>
+      <button id="settingBtn" class="icon-btn" title="Cài đặt (Mở khoá phím nhập URL)">⚙️ Settings</button>
+    </div>
+  </div>
+  <div class="main-content">
+    <!-- View 1: Browser -->
+    <div id="browserView" class="view active">
+      <iframe id="browserFrame" src="about:blank" allow="fullscreen"></iframe>
+    </div>
+    
+    <!-- View 2: Settings -->
+    <div id="settingsView" class="view">
+      <div class="settings-container">
+        <h2>Cài đặt</h2>
+        <div class="setting-group">
+          <label for="urlInput">Trang web (URL)</label>
+          <div class="input-wrapper">
+            <div class="input-actions-container">
+              <input type="text" id="urlInput" placeholder="VD: https://chatgpt.com">
+              <div class="input-actions">
+                <button id="clearInputBtn" class="inside-input-btn" title="Xóa rỗng" style="display: none;">✕</button>
+                <button id="pasteInputBtn" class="inside-input-btn" title="Dán từ Clipboard">📋</button>
+              </div>
+            </div>
+            <button id="saveBtn">Lưu & Mở</button>
+          </div>
+          <div class="status" id="statusMsg">Đã lưu URL thành công!</div>
+        </div>
+        
+        <div class="url-history">
+          <div class="history-header">
+            <h3>Danh sách đã lưu</h3>
+            <button id="clearHistoryBtn" class="text-btn">Xoá tất cả</button>
+          </div>
+          <ul id="urlList" class="url-list">
+            <!-- Items via JS -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

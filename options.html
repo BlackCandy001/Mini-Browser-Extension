@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Mini Browser</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #202124;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 24px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+    h1 {
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: #1a73e8;
+    }
+    .setting-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .input-wrapper {
+      display: flex;
+      gap: 12px;
+    }
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 10px 12px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: #1a73e8;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #1557b0;
+    }
+    .status {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #0f9d58;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .status.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Mini Browser Settings</h1>
+    
+    <div class="setting-group">
+      <label for="urlInput">Trang web mặc định (URL)</label>
+      <div class="input-wrapper">
+        <input type="text" id="urlInput" placeholder="Nhập đường dẫn trang web (VD: https://chatgpt.com)">
+        <button id="saveBtn">Lưu lại</button>
+      </div>
+      <div class="status" id="statusMsg">Đã lưu URL thành công!</div>
+    </div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
