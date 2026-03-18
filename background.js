@@ -42,8 +42,17 @@ const bypassIframeRules = [
 ];
 
 // Cập nhật rule ngay khi phiên làm việc chạy để hỗ trợ tabIds
-chrome.declarativeNetRequest.updateSessionRules({
-  removeRuleIds: [1], // Xoá rule cũ (id: 1)
-  addRules: bypassIframeRules
-});
+function setupRules() {
+  chrome.declarativeNetRequest.updateSessionRules({
+    removeRuleIds: [1], // Xoá rule cũ (id: 1)
+    addRules: bypassIframeRules
+  });
+}
+
+// Chạy khi Browser hoặc Service Worker khởi động lại
+chrome.runtime.onStartup.addListener(setupRules);
+chrome.runtime.onInstalled.addListener(setupRules);
+
+// Chạy lần đầu tiên lúc mã được nạp
+setupRules();
 
