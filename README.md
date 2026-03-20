@@ -28,6 +28,20 @@ Mini Browser là một tiện ích mở rộng mạnh mẽ cho Google Chrome, ma
 6. Duyệt đến thư mục chứa mã nguồn của Mini Browser và chọn nó.
 7. Bạn đã cài đặt thành công! Ghim 📌 (Pin) tiện ích lên thanh trình duyệt và sử dụng nhé.
 
+## 📖 Hướng Dẫn Sử Dụng
+
+1. **Giao Diện Duyệt Web (Home)**: Mở tiện ích trên thanh Side Panel để duyệt web song song. Bấm vào chữ "Mini Browser ▼" trên cùng để mở nhanh **Menu Dropdown** chứa các trang web đã ghim.
+2. **Cài Đặt (Settings)**: Bấm nút "⚙️ Settings" ở góc trên cùng bên phải để mở trang quản lý.
+3. **Nhập URL Nhanh**: 
+     - Dùng nút "📋" để dán ngay link bạn vừa copy (Clipboard).
+     - Dùng nút "✕" để xóa sạch ô nhập chữ nhanh chóng.
+     - Sau khi có link, hãy bấm **"Lưu & Mở"**. Hệ thống sẽ tự thêm `https://` nếu bạn lỡ quên gõ nha.
+4. **Quản Lý Lịch Sử URL**: Mọi trang bạn nhập đều được lưu lại ngay phía dưới cho lần truy cập sau.
+     - Bấm biểu tượng **Ngôi sao (☆ / ★)** để Ghim trang web yêu thích.
+     - Di chuột vào một URL bất kỳ sẽ hiện nút **Thùng rác (🗑️)** để xoá từng mục một.
+     - Dùng nút **"Xóa tất cả"** khi muốn làm sạch toàn bộ lịch sử danh sách.
+     - Các trang web ở danh sách này đều tự hiển thị Icon riêng biệt lấy từ nguồn của Google cực đẹp.
+
 ## 🛠️ Cấu Trúc Mã Nguồn
 
 Dự án này sử dụng Manifest V3 (tiêu chuẩn mới nhất của Google Chrome):
