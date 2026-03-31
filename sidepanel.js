@@ -10,18 +10,70 @@ document.addEventListener('DOMContentLoaded', () => {
   const backBtn = document.getElementById('backBtn');
   const urlListEl = document.getElementById('urlList');
   const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  
+  // --- Theme Elements ---
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const themeIcon = themeToggleBtn.querySelector('.theme-icon');
+  const themeText = themeToggleBtn.querySelector('.theme-text');
+
+  // --- Split View Elements ---
+  // --- Split View Elements ---
+  const splitVBtn = document.getElementById('splitVBtn');
+  const splitHBtn = document.getElementById('splitHBtn');
+  const targetBtn = document.getElementById('targetBtn');
+  const swapBtn = document.getElementById('swapBtn');
+  const frame1Container = document.getElementById('frame1Container');
+  const frame2Container = document.getElementById('frame2Container');
+  const browserFrame2 = document.getElementById('browserFrame2');
+  const resizer = document.getElementById('resizer');
 
   // --- Dropdown Variables ---
   const dropdownToggle = document.getElementById('dropdownToggle');
   const pinnedDropdown = document.getElementById('pinnedDropdown');
+  const pinnedList = document.getElementById('pinnedList');
 
   // State
   let savedUrls = []; // Dạng [{url: '...', pinned: false}]
+  let splitMode = null; // null, 'v', 'h'
+  let activeTarget = 'top'; // 'top' hoặc 'bottom' (Tuong ung Left/Right trong mode H)
 
-  // Hàm load URL vào iframe
-  function loadUrl(url) {
+  // Hàm cập nhật vùng đang Active (Xanh highlight)
+  function updateActiveUI(target) {
+    activeTarget = target;
+    const isV = splitMode === 'v';
+    if (target === 'top') {
+      frame1Container.classList.add('active');
+      frame2Container.classList.remove('active');
+      targetBtn.innerHTML = isV ? '🔼 Top' : '◀️ Left';
+      targetBtn.className = 'icon-btn top';
+      // Cập nhật lại giá trị ô nhập URL từ URL của frame 1
+      chrome.storage.local.get('savedUrlTop', (res) => {
+        if (res.savedUrlTop) urlInput.value = res.savedUrlTop;
+        else urlInput.value = '';
+        toggleClearBtn();
+      });
+    } else {
+      frame1Container.classList.remove('active');
+      frame2Container.classList.add('active');
+      targetBtn.innerHTML = isV ? '🔽 Bottom' : '▶️ Right';
+      targetBtn.className = 'icon-btn bottom';
+      // Cập nhật lại giá trị ô nhập URL từ URL của frame 2
+      chrome.storage.local.get('savedUrlBottom', (res) => {
+        if (res.savedUrlBottom) urlInput.value = res.savedUrlBottom;
+        else urlInput.value = '';
+        toggleClearBtn();
+      });
+    }
+  }
+
+  // Hàm load URL vào iframe tương ứng
+  function loadUrl(url, target = activeTarget) {
     if (!url) return;
-    browserFrame.src = url;
+    if (target === 'top') {
+      browserFrame.src = url;
+    } else {
+      browserFrame2.src = url;
+    }
   }
 
   // --- Logic Dropdown ---
@@ -41,14 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Load danh sách ghim vào Dropdown
   function renderDropdown() {
-    pinnedDropdown.innerHTML = '';
+    pinnedList.innerHTML = '';
     const pinnedUrls = savedUrls.filter(u => u.pinned);
 
     if (pinnedUrls.length === 0) {
       const emptyDiv = document.createElement('div');
       emptyDiv.className = 'dropdown-empty';
       emptyDiv.textContent = 'Bạn chưa ghim trang nào (vào Settings để ghim ★)';
-      pinnedDropdown.appendChild(emptyDiv);
+      pinnedList.appendChild(emptyDiv);
       return;
     }
 
@@ -80,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pinnedDropdown.classList.remove('show');
       };
 
-      pinnedDropdown.appendChild(dropItem);
+      pinnedList.appendChild(dropItem);
     });
   }
 
@@ -188,22 +240,87 @@ document.addEventListener('DOMContentLoaded', () => {
        setTimeout(() => statusMsg.classList.remove('show'), 2000);
     }
     
-    // Lưu URL đang hiển thị hiện tại vào variable riêng phòng khởi động app
-    chrome.storage.local.set({ savedUrl: url });
+    // Lưu URL vào Storage cho đúng phần
+    if (activeTarget === 'top') {
+      chrome.storage.local.set({ savedUrlTop: url });
+    } else {
+      chrome.storage.local.set({ savedUrlBottom: url });
+    }
     loadUrl(url);
   }
 
+  // --- Theme Logic ---
+  let currentTheme = 'light';
+
+  function applyTheme(theme) {
+    const html = document.documentElement;
+    currentTheme = theme;
+
+    if (theme === 'dark') {
+      html.setAttribute('data-theme', 'dark');
+      themeIcon.textContent = '🌙';
+      themeText.textContent = 'Chế độ Tối';
+    } else {
+      html.setAttribute('data-theme', 'light');
+      themeIcon.textContent = '☀️';
+      themeText.textContent = 'Chế độ Sáng';
+    }
+    chrome.storage.local.set({ theme: theme });
+  }
+
+  themeToggleBtn.addEventListener('click', () => {
+    const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
+    applyTheme(nextTheme);
+  });
+
   // Restore từ Storage lúc Init
-  chrome.storage.local.get(['savedUrl', 'urlHistory'], (result) => {
+  chrome.storage.local.get(['savedUrlTop', 'savedUrlBottom', 'urlHistory', 'splitMode', 'splitRatioV', 'splitRatioH', 'theme'], (result) => {
+    // Theme Init (Mặc định Sáng nếu chưa có)
+    applyTheme(result.theme === 'dark' ? 'dark' : 'light');
+    
     if (result.urlHistory && Array.isArray(result.urlHistory)) {
       savedUrls = result.urlHistory;
       renderUrlList();
       renderDropdown();
     }
     
-    if (result.savedUrl) {
-      urlInput.value = result.savedUrl;
-      loadUrl(result.savedUrl);
+    if (result.splitMode) {
+      splitMode = result.splitMode;
+      browserView.classList.add(splitMode === 'v' ? 'split-v-mode' : 'split-h-mode');
+      if (splitMode === 'v') splitVBtn.classList.add('active');
+      else splitHBtn.classList.add('active');
+      targetBtn.style.display = 'flex';
+      updateActiveUI(activeTarget); // Cap nhat nhãn nút
+    }
+
+    // Áp dụng tỷ lệ chia màn hình cũ
+    if (splitMode === 'v' && result.splitRatioV) {
+      frame1Container.style.height = `${result.splitRatioV}%`;
+      frame1Container.style.width = '100%';
+    } else if (splitMode === 'h' && result.splitRatioH) {
+      frame1Container.style.width = `${result.splitRatioH}%`;
+      frame1Container.style.height = '100%';
+    }
+
+    if (result.savedUrlTop) {
+      loadUrl(result.savedUrlTop, 'top');
+      if (activeTarget === 'top') urlInput.value = result.savedUrlTop;
+    }
+
+    if (result.savedUrlBottom) {
+      loadUrl(result.savedUrlBottom, 'bottom');
+      if (activeTarget === 'bottom') urlInput.value = result.savedUrlBottom;
+    }
+    
+    // Nếu chưa có savedUrlTop (bản cũ chuyển sang hoặc mới cài), thử lấy savedUrl cũ
+    if (!result.savedUrlTop) {
+        chrome.storage.local.get('savedUrl', (old) => {
+            if (old.savedUrl) {
+                loadUrl(old.savedUrl, 'top');
+                urlInput.value = old.savedUrl;
+                chrome.storage.local.set({ savedUrlTop: old.savedUrl });
+            }
+        });
     }
   });
 
@@ -224,6 +341,134 @@ document.addEventListener('DOMContentLoaded', () => {
 
   settingBtn.addEventListener('click', () => switchView('settings'));
   backBtn.addEventListener('click', () => switchView('browser'));
+
+  // Logic Toggle Split Mode
+  function toggleSplit(mode) {
+    const prevMode = splitMode;
+    
+    // Xoá hết class cũ
+    browserView.classList.remove('split-v-mode', 'split-h-mode');
+    splitVBtn.classList.remove('active');
+    splitHBtn.classList.remove('active');
+    frame1Container.style.height = '';
+    frame1Container.style.width = '';
+
+    if (prevMode === mode) {
+      // Tắt split
+      splitMode = null;
+      targetBtn.style.display = 'none';
+      swapBtn.style.display = 'none';
+      updateActiveUI('top');
+    } else {
+      // Bật split mode mới
+      splitMode = mode;
+      browserView.classList.add(mode === 'v' ? 'split-v-mode' : 'split-h-mode');
+      if (mode === 'v') splitVBtn.classList.add('active');
+      else splitHBtn.classList.add('active');
+      targetBtn.style.display = 'flex';
+      swapBtn.style.display = 'flex';
+      
+      // Load tỉ lệ cũ
+      chrome.storage.local.get(['splitRatioV', 'splitRatioH'], (res) => {
+        if (mode === 'v' && res.splitRatioV) frame1Container.style.height = `${res.splitRatioV}%`;
+        if (mode === 'h' && res.splitRatioH) frame1Container.style.width = `${res.splitRatioH}%`;
+      });
+
+      updateActiveUI(activeTarget);
+    }
+    chrome.storage.local.set({ splitMode: splitMode });
+  }
+
+  splitVBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Giữ menu mở để người dùng nhấn tiếp
+    toggleSplit('v');
+  });
+  splitHBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Giữ menu mở để người dùng nhấn tiếp
+    toggleSplit('h');
+  });
+
+  // Logic Hoán đổi (Swap) kết hợp ngăn đóng menu
+  swapBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    chrome.storage.local.get(['savedUrlTop', 'savedUrlBottom'], (res) => {
+      const urlTop = res.savedUrlTop || '';
+      const urlBottom = res.savedUrlBottom || '';
+      
+      // Hoán đổi trong Storage
+      chrome.storage.local.set({
+        savedUrlTop: urlBottom,
+        savedUrlBottom: urlTop
+      });
+      
+      // Load lại vào Iframe
+      loadUrl(urlBottom, 'top');
+      loadUrl(urlTop, 'bottom');
+      
+      // Cập nhật lại UI Input của frame đang active
+      updateActiveUI(activeTarget);
+    });
+  });
+  // --- Logic Resizer (Kéo thả thay đổi độ cao) ---
+  let isDragging = false;
+  let rafId = null;
+
+  resizer.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    document.body.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging || !splitMode) return;
+
+    if (rafId) cancelAnimationFrame(rafId);
+
+    rafId = requestAnimationFrame(() => {
+      const containerRect = browserView.getBoundingClientRect();
+      
+      if (splitMode === 'v') {
+        const relativeY = e.clientY - containerRect.top;
+        let percentage = (relativeY / containerRect.height) * 100;
+        if (percentage < 10) percentage = 10;
+        if (percentage > 90) percentage = 90;
+        frame1Container.style.height = `${percentage}%`;
+      } else {
+        const relativeX = e.clientX - containerRect.left;
+        let percentage = (relativeX / containerRect.width) * 100;
+        if (percentage < 10) percentage = 10;
+        if (percentage > 90) percentage = 90;
+        frame1Container.style.width = `${percentage}%`;
+      }
+    });
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      document.body.classList.remove('dragging');
+      if (rafId) cancelAnimationFrame(rafId);
+      
+      // Lưu tỷ lệ tương ứng
+      if (splitMode === 'v') {
+        const ratio = parseFloat(frame1Container.style.height);
+        chrome.storage.local.set({ splitRatioV: ratio });
+      } else if (splitMode === 'h') {
+        const ratio = parseFloat(frame1Container.style.width);
+        chrome.storage.local.set({ splitRatioH: ratio });
+      }
+    }
+  });
+
+  // Sự kiện chọn Target (Nút Toggle duy nhất)
+  targetBtn.addEventListener('click', () => {
+    const newTarget = activeTarget === 'top' ? 'bottom' : 'top';
+    updateActiveUI(newTarget);
+  });
+
+  // Click vào iframe wrapper để tự động đổi target (tiện lợi)
+  frame1Container.addEventListener('click', () => updateActiveUI('top'));
+  frame2Container.addEventListener('click', () => updateActiveUI('bottom'));
 
   saveBtn.addEventListener('click', () => {
     loadAndSaveUrl(urlInput.value, true);

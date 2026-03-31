@@ -13,10 +13,22 @@
         Mini Browser <span class="caret">▼</span>
       </div>
       <div id="pinnedDropdown" class="dropdown-menu">
-        <!-- Pinned items here via JS -->
+        <div class="dropdown-actions">
+          <span class="dropdown-label">Chế độ chia màn hình:</span>
+          <div class="split-controls">
+            <button id="splitVBtn" class="control-btn" title="Chia Dọc (Trên - Dưới)">⟓ V-Split</button>
+            <button id="splitHBtn" class="control-btn" title="Chia Ngang (Trái - Phải)">⟔ H-Split</button>
+          </div>
+          <button id="swapBtn" class="control-btn swap-btn" title="Hoán đổi vị trí" style="display: none;">🔄 Swap vị trí</button>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div id="pinnedList">
+          <!-- Pinned items here via JS -->
+        </div>
       </div>
     </div>
     <div class="toolbar-actions">
+      <button id="targetBtn" class="icon-btn" title="Chọn mục tiêu" style="display: none;">🔼 Top</button>
       <button id="backBtn" class="icon-btn" title="Trang chủ (Duyệt web)" style="display: none;">🏠 Home</button>
       <button id="settingBtn" class="icon-btn" title="Cài đặt (Mở khoá phím nhập URL)">⚙️ Settings</button>
     </div>
@@ -24,14 +36,30 @@
   <div class="main-content">
     <!-- View 1: Browser -->
     <div id="browserView" class="view active">
-      <iframe id="browserFrame" src="about:blank" allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen; geolocation"></iframe>
+      <div id="frame1Container" class="iframe-wrapper active">
+        <iframe id="browserFrame" src="about:blank" allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen; geolocation"></iframe>
+      </div>
+      <div id="resizer" class="resizer"></div>
+      <div id="frame2Container" class="iframe-wrapper">
+        <iframe id="browserFrame2" src="about:blank" allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen; geolocation"></iframe>
+      </div>
     </div>
     
     <!-- View 2: Settings -->
     <div id="settingsView" class="view">
       <div class="settings-container">
         <h2>Cài đặt</h2>
-        <div class="setting-group">
+        <!-- Cài đặt Giao diện -->
+      <div class="setting-group theme-setting">
+        <label>Giao diện (Theme)</label>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Chuyển đổi Sáng/Tối">
+          <span class="theme-icon">☀️</span>
+          <span class="theme-text">Chế độ Sáng</span>
+        </button>
+      </div>
+
+      <!-- Cài đặt URL -->
+      <div class="setting-group">
           <label for="urlInput">Trang web (URL)</label>
           <div class="input-wrapper">
             <div class="input-actions-container">
@@ -58,6 +86,7 @@
       </div>
     </div>
   </div>
+  <div id="dragOverlay" class="drag-overlay"></div>
   <script src="sidepanel.js"></script>
 </body>
 </html>
